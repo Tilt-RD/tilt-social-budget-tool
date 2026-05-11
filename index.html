@@ -170,6 +170,7 @@
             <div class="card"><span>Total hours</span><strong id="totalHours">0</strong></div>
             <div class="card"><span>Unique content</span><strong id="uniqueContent">0</strong></div>
             <div class="card"><span>Platform posts</span><strong id="platformPosts">0</strong></div>
+            <div class="card"><span>Extra budgets</span><strong id="extrasTotal">€0</strong></div>
             <div class="card big-total"><span>Total monthly budget, ex VAT</span><strong id="grandTotal">€0</strong></div>
           </div>
         </div>
@@ -185,6 +186,11 @@
             <div class="slider-name">Prizing</div>
             <div><input id="prizing" type="range" min="0" max="2000" step="25" value="0"><div class="ticks"><span>€0</span><span>€1k</span><span>€2k</span></div></div>
             <div class="value-box" id="prizingVal">€0</div>
+          </div>
+          <div class="slider-row">
+            <div class="slider-name">UGC content</div>
+            <div><input id="ugcVideos" type="range" min="0" max="20" step="1" value="0"><div class="ticks"><span>0 videos</span><span>10</span><span>20</span></div><p class="mini">Calculated at approx. €400 per UGC video.</p></div>
+            <div class="value-box" id="ugcVal">€0</div>
           </div>
         </div>
 
@@ -238,6 +244,7 @@
       el('videos').value = values.videos ?? 0;
       el('adSpend').value = values.adSpend ?? 0;
       el('prizing').value = values.prizing ?? 0;
+      el('ugcVideos').value = values.ugcVideos ?? 0;
       for (const p of platforms) communityState[p] = values.communityPlatforms?.[p] ?? true;
       renderPlatformSliders(); renderCommunityToggles();
       document.querySelectorAll('[data-community]').forEach(t => t.classList.toggle('active', communityState[t.dataset.community]));
@@ -267,7 +274,8 @@
       const adminHours = schedulingHours + adsMgmtHours + reportingHours + meetingsHours + accountHours;
       const totalHours = calendarHours + communityHours + creativeHours + adminHours;
       const managementFee = totalHours * rate;
-      const extras = n('adSpend') + n('prizing');
+      const ugcCost = n('ugcVideos') * 400;
+      const extras = n('adSpend') + n('prizing') + ugcCost;
       const grand = managementFee + extras;
 
       for (const p of platforms) el(`${p}Val`).textContent = platformState[p];
@@ -276,6 +284,8 @@
       el('staticsVal').textContent = statics;
       el('adSpendVal').textContent = eur.format(n('adSpend'));
       el('prizingVal').textContent = eur.format(n('prizing'));
+      el('ugcVal').textContent = `${n('ugcVideos')} / ${eur.format(ugcCost)}`;
+      el('extrasTotal').textContent = eur.format(extras);
       el('managementFee').textContent = eur.format(managementFee);
       el('totalHours').textContent = one(totalHours);
       el('uniqueContent').textContent = uniqueContent;
@@ -301,12 +311,12 @@
         el('overview').innerHTML = `<strong>${client}</strong><br>
           Estimated monthly management fee: <strong>${eur2.format(managementFee)}</strong> ex VAT, based on <strong>${one(totalHours)} hours</strong> at <strong>${eur2.format(rate)}/hr</strong>.<br><br>
           Scope: <strong>${platformPosts}</strong> platform posts per month across ${platforms.filter(p => platformState[p] > 0).join(', ') || 'selected platforms'}, approx. <strong>${uniqueContent}</strong> unique content pieces, split as <strong>${videos}</strong> videos/reels and <strong>${statics}</strong> static/carousel assets.<br><br>
-          Additional monthly budgets: <strong>${eur2.format(extras)}</strong>. Total monthly budget ex VAT: <strong>${eur2.format(grand)}</strong>.`;
+          Extra budgets, separate from the management fee: <strong>${eur2.format(extras)}</strong>. Total monthly budget ex VAT: <strong>${eur2.format(grand)}</strong>.`;
       }
     }
     function exportCsv() {
       const rows = [
-        ['Client', el('client').value], ['Rate', n('rate')], ['Management fee', el('managementFee').textContent], ['Total monthly ex VAT', el('grandTotal').textContent], [],
+        ['Client', el('client').value], ['Rate', n('rate')], ['Management fee', el('managementFee').textContent], ['Extra budgets', el('extrasTotal').textContent], ['Total monthly ex VAT', el('grandTotal').textContent], [],
         ['Platform','Posts per month'], ...platforms.map(p => [p, platformState[p]]), [],
         ['Workload','Hours'], ['Calendar planning', el('calendarHoursOut').textContent], ['Community management', el('communityHoursOut').textContent], ['Creative production', el('creativeHoursOut').textContent], ['Scheduling/reporting/account', el('adminHoursOut').textContent]
       ];
@@ -320,7 +330,7 @@
       client: 'Example Client', rate: 100,
       platforms: { Facebook: 12, Instagram: 12, TikTok: 12, LinkedIn: 4 },
       communityMins: 0, videos: 4,
-      adSpend: 0, prizing: 0
+      adSpend: 0, prizing: 0, ugcVideos: 0
     }));
     el('csvBtn').addEventListener('click', exportCsv);
 

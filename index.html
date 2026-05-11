@@ -95,11 +95,11 @@
       <div>
         <div class="logo">Tilt</div>
         <h1>Social Budget Tool</h1>
-        <p class="subtitle">Start at zero, drag the bars, and build a monthly social management scope in front of a client. Rates are editable, outputs update live.</p>
+        <p class="subtitle">Start at zero, drag the bars, and build a monthly social management fee. Planning, scheduling, advertising, reporting, meetings and account management calculate automatically from the post volume.</p>
       </div>
       <div class="actions no-print">
         <button id="zeroBtn">Set all to zero</button>
-        <button id="exampleBtn">Load Golden Irish example</button>
+        <button id="exampleBtn">Load €3.5k example</button>
         <button id="csvBtn">Export CSV</button>
         <button class="primary" onclick="window.print()">Print / PDF</button>
       </div>
@@ -115,7 +115,7 @@
             </div>
             <div>
               <label>Blended hourly rate, ex VAT</label>
-              <input id="rate" type="number" min="0" step="5" value="70" />
+              <input id="rate" type="number" min="0" step="5" value="100" />
             </div>
           </div>
         </div>
@@ -145,20 +145,21 @@
             <div class="value-box"><span id="videosVal">0</span></div>
           </div>
           <div class="slider-row">
-            <div class="slider-name">Static / carousels</div>
-            <div><input id="statics" type="range" min="0" max="40" step="1" value="0"><div class="ticks"><span>0</span><span>15</span><span>30</span><span>40</span></div></div>
+            <div class="slider-name">Static / carousels required</div>
+            <div class="mini">Calculated automatically: total unique posts minus videos/reels.</div>
             <div class="value-box"><span id="staticsVal">0</span></div>
-          </div>
-          <div class="slider-row">
-            <div class="slider-name">Shoot time / month</div>
-            <div><input id="shootHours" type="range" min="0" max="16" step="0.5" value="0"><div class="ticks"><span>0h</span><span>4h</span><span>8h</span><span>16h</span></div></div>
-            <div class="value-box"><span id="shootHoursVal">0</span>h</div>
           </div>
         </div>
 
         <div class="section">
-          <h2>Management and reporting</h2>
-          <div id="managementSliders"></div>
+          <h2>Automatically calculated service hours</h2>
+          <div class="summary-line"><span>Calendar planning</span><strong id="calendarCalc">0h</strong></div>
+          <div class="summary-line"><span>Scheduling</span><strong id="schedulingCalc">0h</strong></div>
+          <div class="summary-line"><span>Advertising management</span><strong id="adsMgmtCalc">0h</strong></div>
+          <div class="summary-line"><span>Analysis and reporting</span><strong id="reportingCalc">0h</strong></div>
+          <div class="summary-line"><span>Client meetings</span><strong id="meetingsCalc">0h</strong></div>
+          <div class="summary-line"><span>Account management</span><strong id="accountCalc">0h</strong></div>
+          <p class="mini">Most clients include approx. €700/month for meetings and account management: 2 hours of meetings + 5 hours account management at €100/hr.</p>
         </div>
       </section>
 
@@ -203,8 +204,8 @@
           <div class="summary-line"><span>Calendar planning</span><strong id="calendarHoursOut">0h</strong></div>
           <div class="summary-line"><span>Community management</span><strong id="communityHoursOut">0h</strong></div>
           <div class="summary-line"><span>Creative production</span><strong id="creativeHoursOut">0h</strong></div>
-          <div class="summary-line"><span>Scheduling, reporting and account management</span><strong id="adminHoursOut">0h</strong></div>
-          <p class="mini">Hour assumptions can be tuned later, but defaults follow the Golden Irish worksheet logic: planning, response handling, shoots, post-production, scheduling, reporting, meetings and account management.</p>
+          <div class="summary-line"><span>Scheduling, ads, reporting, meetings and account management</span><strong id="adminHoursOut">0h</strong></div>
+          <p class="mini">Hours are calculated from the number of posts. Videos/reels reduce the number of static/carousel assets required. Client meetings and account management are included once there is an active monthly scope.</p>
         </div>
       </aside>
     </div>
@@ -216,15 +217,6 @@
     const platforms = ['Facebook', 'Instagram', 'TikTok', 'LinkedIn'];
     const platformState = Object.fromEntries(platforms.map(p => [p, 0]));
     const communityState = Object.fromEntries(platforms.map(p => [p, true]));
-    const management = [
-      ['Calendar planning', 'calendar', 0, 12, 0.5],
-      ['Content scheduling', 'scheduling', 0, 10, 0.5],
-      ['Advertising management', 'adsMgmt', 0, 20, 0.5],
-      ['Analysis and reporting', 'reporting', 0, 12, 0.5],
-      ['Client meetings', 'meetings', 0, 8, 0.5],
-      ['Account management', 'account', 0, 16, 0.5]
-    ];
-    const managementState = Object.fromEntries(management.map(m => [m[1], 0]));
     const el = id => document.getElementById(id);
     const n = id => Number(el(id).value || 0);
     const one = v => Number(v).toFixed(Number(v) % 1 ? 1 : 0);
@@ -244,57 +236,51 @@
       document.querySelectorAll('[data-community]').forEach(t => t.addEventListener('click', () => { communityState[t.dataset.community] = !communityState[t.dataset.community]; t.classList.toggle('active', communityState[t.dataset.community]); calculate(); }));
     }
 
-    function renderManagementSliders() {
-      el('managementSliders').innerHTML = management.map(([label, key, min, max, step]) => `
-        <div class="slider-row">
-          <div class="slider-name">${label}</div>
-          <div><input data-management="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${managementState[key]}"><div class="ticks"><span>0h</span><span>${max / 2}h</span><span>${max}h</span></div></div>
-          <div class="value-box" id="${key}Val">${one(managementState[key])}h</div>
-        </div>`).join('');
-      document.querySelectorAll('[data-management]').forEach(slider => slider.addEventListener('input', e => { managementState[e.target.dataset.management] = Number(e.target.value); calculate(); }));
-    }
-
     function setValues(values) {
       for (const p of platforms) platformState[p] = values.platforms?.[p] ?? 0;
-      for (const [_, key] of management) managementState[key] = values.management?.[key] ?? 0;
       el('client').value = values.client ?? '';
-      el('rate').value = values.rate ?? 70;
+      el('rate').value = values.rate ?? 100;
       el('communityMins').value = values.communityMins ?? 0;
       el('videos').value = values.videos ?? 0;
-      el('statics').value = values.statics ?? 0;
-      el('shootHours').value = values.shootHours ?? 0;
       el('adSpend').value = values.adSpend ?? 0;
       el('prizing').value = values.prizing ?? 0;
       el('external').value = values.external ?? 0;
       for (const p of platforms) communityState[p] = values.communityPlatforms?.[p] ?? true;
-      renderPlatformSliders(); renderCommunityToggles(); renderManagementSliders();
+      renderPlatformSliders(); renderCommunityToggles();
       document.querySelectorAll('[data-community]').forEach(t => t.classList.toggle('active', communityState[t.dataset.community]));
       calculate();
     }
-
     function calculate() {
       const rate = n('rate');
       const platformPosts = Object.values(platformState).reduce((a,b) => a + b, 0);
       const uniqueContent = Math.max(0, ...Object.values(platformState));
+      if (n('videos') > uniqueContent) el('videos').value = uniqueContent;
+      const videos = n('videos');
+      const statics = Math.max(uniqueContent - videos, 0);
       const communityPlatforms = Object.values(communityState).filter(Boolean).length;
       const communityHours = (n('communityMins') * communityPlatforms * 15) / 60;
-      const videoHours = n('videos') * (4 / 9);
-      const staticHours = n('statics') * 0.5;
-      const shootHours = n('shootHours');
-      const creativeHours = videoHours + staticHours + shootHours;
-      const calendarHours = managementState.calendar;
-      const adminHours = Object.entries(managementState).filter(([k]) => k !== 'calendar').reduce((sum, [,v]) => sum + v, 0);
+
+      const videoHours = videos * 1.5;
+      const staticHours = statics * 0.5;
+      const creativeHours = videoHours + staticHours;
+
+      const hasScope = platformPosts > 0;
+      const calendarHours = hasScope ? uniqueContent * 0.5 : 0;
+      const schedulingHours = hasScope ? platformPosts * 0.1 : 0;
+      const adsMgmtHours = hasScope ? 4 : 0;
+      const reportingHours = hasScope ? 4 : 0;
+      const meetingsHours = hasScope ? 2 : 0;
+      const accountHours = hasScope ? 5 : 0;
+      const adminHours = schedulingHours + adsMgmtHours + reportingHours + meetingsHours + accountHours;
       const totalHours = calendarHours + communityHours + creativeHours + adminHours;
       const managementFee = totalHours * rate;
       const extras = n('adSpend') + n('prizing') + n('external');
       const grand = managementFee + extras;
 
       for (const p of platforms) el(`${p}Val`).textContent = platformState[p];
-      for (const [_, key] of management) el(`${key}Val`).textContent = `${one(managementState[key])}h`;
       el('communityMinsVal').textContent = n('communityMins');
-      el('videosVal').textContent = n('videos');
-      el('staticsVal').textContent = n('statics');
-      el('shootHoursVal').textContent = one(n('shootHours'));
+      el('videosVal').textContent = videos;
+      el('staticsVal').textContent = statics;
       el('adSpendVal').textContent = eur.format(n('adSpend'));
       el('prizingVal').textContent = eur.format(n('prizing'));
       el('externalVal').textContent = eur.format(n('external'));
@@ -307,6 +293,12 @@
       el('communityHoursOut').textContent = `${one(communityHours)}h`;
       el('creativeHoursOut').textContent = `${one(creativeHours)}h`;
       el('adminHoursOut').textContent = `${one(adminHours)}h`;
+      el('calendarCalc').textContent = `${one(calendarHours)}h`;
+      el('schedulingCalc').textContent = `${one(schedulingHours)}h`;
+      el('adsMgmtCalc').textContent = `${one(adsMgmtHours)}h`;
+      el('reportingCalc').textContent = `${one(reportingHours)}h`;
+      el('meetingsCalc').textContent = `${one(meetingsHours)}h`;
+      el('accountCalc').textContent = `${one(accountHours)}h`;
 
       const client = el('client').value || 'Client';
       if (grand === 0 && platformPosts === 0 && totalHours === 0) {
@@ -316,11 +308,10 @@
         el('overview').className = 'recommendation';
         el('overview').innerHTML = `<strong>${client}</strong><br>
           Estimated monthly management fee: <strong>${eur2.format(managementFee)}</strong> ex VAT, based on <strong>${one(totalHours)} hours</strong> at <strong>${eur2.format(rate)}/hr</strong>.<br><br>
-          Scope: <strong>${platformPosts}</strong> platform posts per month across ${platforms.filter(p => platformState[p] > 0).join(', ') || 'selected platforms'}, approx. <strong>${uniqueContent}</strong> unique content pieces, <strong>${n('videos')}</strong> videos/reels and <strong>${n('statics')}</strong> static/carousel assets.<br><br>
+          Scope: <strong>${platformPosts}</strong> platform posts per month across ${platforms.filter(p => platformState[p] > 0).join(', ') || 'selected platforms'}, approx. <strong>${uniqueContent}</strong> unique content pieces, split as <strong>${videos}</strong> videos/reels and <strong>${statics}</strong> static/carousel assets.<br><br>
           Additional monthly budgets: <strong>${eur2.format(extras)}</strong>. Total monthly budget ex VAT: <strong>${eur2.format(grand)}</strong>.`;
       }
     }
-
     function exportCsv() {
       const rows = [
         ['Client', el('client').value], ['Rate', n('rate')], ['Management fee', el('managementFee').textContent], ['Total monthly ex VAT', el('grandTotal').textContent], [],
@@ -332,17 +323,16 @@
     }
 
     document.querySelectorAll('input').forEach(input => input.addEventListener('input', calculate));
-    el('zeroBtn').addEventListener('click', () => setValues({ rate: 70 }));
+    el('zeroBtn').addEventListener('click', () => setValues({ rate: 100 }));
     el('exampleBtn').addEventListener('click', () => setValues({
-      client: 'Golden Irish Eggs', rate: 70,
-      platforms: { Facebook: 12, Instagram: 12, TikTok: 12, LinkedIn: 2 },
-      communityMins: 15, videos: 9, statics: 3, shootHours: 4,
-      management: { calendar: 6, scheduling: 4, adsMgmt: 0, reporting: 3, meetings: 2, account: 6 },
+      client: 'Example Client', rate: 100,
+      platforms: { Facebook: 12, Instagram: 12, TikTok: 12, LinkedIn: 4 },
+      communityMins: 0, videos: 4,
       adSpend: 0, prizing: 0, external: 0
     }));
     el('csvBtn').addEventListener('click', exportCsv);
 
-    renderPlatformSliders(); renderCommunityToggles(); renderManagementSliders(); calculate();
+    renderPlatformSliders(); renderCommunityToggles(); calculate();
   </script>
 </body>
 </html>

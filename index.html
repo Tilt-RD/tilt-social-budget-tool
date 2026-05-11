@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tilt Social Media Budget Planner</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #111827;
+      --panel-2: #172033;
+      --ink: #f8fafc;
+      --muted: #94a3b8;
+      --line: rgba(148, 163, 184, 0.22);
+      --green: #5eead4;
+      --pink: #f472b6;
+      --amber: #fbbf24;
+      --blue: #60a5fa;
+      --danger: #fb7185;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(94, 234, 212, 0.18), transparent 34rem),
+        radial-gradient(circle at top right, rgba(244, 114, 182, 0.16), transparent 30rem),
+        var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    header {
+      padding: 34px clamp(18px, 4vw, 52px) 22px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(11, 16, 32, 0.74);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(18px);
+    }
+    .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 48px); letter-spacing: -0.04em; line-height: 0.96; }
+    .sub { color: var(--muted); margin: 12px 0 0; max-width: 760px; line-height: 1.5; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    button, .button {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--ink);
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 160ms ease;
+    }
+    button:hover, .button:hover { transform: translateY(-1px); border-color: rgba(94, 234, 212, 0.7); }
+    .primary { background: linear-gradient(135deg, #14b8a6, #2563eb); border: 0; }
+    main { padding: 28px clamp(18px, 4vw, 52px) 52px; }
+    .grid { display: grid; grid-template-columns: minmax(320px, 0.95fr) minmax(420px, 1.45fr); gap: 22px; align-items: start; }
+    .panel { background: rgba(17, 24, 39, 0.86); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); overflow: hidden; }
+    .panel h2 { margin: 0; padding: 18px 20px; font-size: 18px; letter-spacing: -0.02em; border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, 0.03); }
+    .panel-body { padding: 18px 20px 20px; }
+    label { display: block; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 7px; font-weight: 800; }
+    input, select, textarea {
+      width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px;
+      background: rgba(2, 6, 23, 0.55); color: var(--ink); font: inherit; outline: none;
+    }
+    textarea { min-height: 74px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.12); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .full { grid-column: 1 / -1; }
+    .summary-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .card { background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03)); border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+    .card span { display: block; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 800; }
+    .card strong { display: block; font-size: clamp(24px, 3vw, 36px); letter-spacing: -0.04em; margin-top: 7px; }
+    .card small { color: var(--muted); display: block; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 11px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; }
+    td input, td select { padding: 8px 9px; border-radius: 10px; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .section-title { margin: 24px 0 10px; color: var(--green); font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 900; }
+    .muted { color: var(--muted); }
+    .pill { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 7px 10px; color: var(--muted); font-size: 12px; }
+    .recommendation { border-left: 4px solid var(--green); background: rgba(20,184,166,0.08); padding: 14px 16px; border-radius: 14px; line-height: 1.55; }
+    .warning { border-left-color: var(--amber); background: rgba(251,191,36,0.08); }
+    .danger { border-left-color: var(--danger); background: rgba(251,113,133,0.08); }
+    .range-row { display: grid; grid-template-columns: 1fr 86px; gap: 12px; align-items: center; }
+    input[type="range"] { padding: 0; accent-color: #14b8a6; }
+    .footer-note { color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 18px; }
+    .hidden { display: none; }
+    @media (max-width: 980px) { .grid, .summary-cards { grid-template-columns: 1fr; } header { position: static; } .topbar { flex-direction: column; } .actions { justify-content: flex-start; } }
+    @media print {
+      body { background: white; color: #111827; }
+      header { position: static; background: white; border-bottom: 1px solid #ddd; }
+      main { padding: 20px; }
+      .panel, .card { box-shadow: none; background: white; border-color: #ddd; }
+      .actions, .no-print { display: none !important; }
+      input, select, textarea { border: 0; background: transparent; color: #111827; padding: 0; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>Tilt Social Media Budget Planner</h1>
+        <p class="sub">Interactive scoping and pricing tool based on the Golden Irish Eggs budget matrix. Adjust channels, content volume, monthly hours, blended rate and pass-through costs to create a client-ready monthly budget.</p>
+      </div>
+      <div class="actions no-print">
+        <button id="resetBtn">Reset to example</button>
+        <button id="csvBtn">Export CSV</button>
+        <button class="primary" onclick="window.print()">Print / PDF</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="summary-cards">
+      <div class="card"><span>Monthly fee</span><strong id="monthlyFee">€0</strong><small>Hours × blended rate</small></div>
+      <div class="card"><span>Total incl. add-ons</span><strong id="grandTotal">€0</strong><small>Management + ad budget + extras</small></div>
+      <div class="card"><span>Total hours</span><strong id="totalHours">0</strong><small>Per month</small></div>
+      <div class="card"><span>Effective post cost</span><strong id="postCost">€0</strong><small>Management fee / unique posts</small></div>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Client setup</h2>
+        <div class="panel-body form-grid">
+          <div class="full">
+            <label>Client / proposal name</label>
+            <input id="clientName" value="Golden Irish Eggs" />
+          </div>
+          <div>
+            <label>Blended rate (€ / hour)</label>
+            <input id="rate" type="number" min="0" step="5" value="70" />
+          </div>
+          <div>
+            <label>VAT rate (%)</label>
+            <input id="vat" type="number" min="0" step="1" value="23" />
+          </div>
+          <div>
+            <label>Monthly ad budget (€)</label>
+            <input id="adBudget" type="number" min="0" step="50" value="0" />
+          </div>
+          <div>
+            <label>Prizing / incentives (€)</label>
+            <input id="prizing" type="number" min="0" step="25" value="0" />
+          </div>
+          <div>
+            <label>Website / CMS updates (€)</label>
+            <input id="website" type="number" min="0" step="25" value="0" />
+          </div>
+          <div>
+            <label>External production (€)</label>
+            <input id="external" type="number" min="0" step="25" value="0" />
+          </div>
+          <div class="full">
+            <label>Notes / assumptions</label>
+            <textarea id="notes">Additional costs and external service costs are presented in advance for approval before being incurred.</textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Channel plan</h2>
+        <div class="panel-body">
+          <table id="platformTable">
+            <thead><tr><th>Platform</th><th>Team</th><th class="num">Posts/mo</th><th>Content mix</th><th>Frequency</th><th class="no-print"></th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p class="footer-note">The Golden Irish example cross-posted the same 9 videos and 3 static/carousel posts across platforms, with slight platform-specific tweaks.</p>
+          <button class="no-print" id="addPlatform">Add platform</button>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top:22px;">
+      <h2>Monthly workload and pricing</h2>
+      <div class="panel-body">
+        <table id="hoursTable">
+          <thead><tr><th>Service line</th><th>Owner / status</th><th>Basis</th><th class="num">Hours</th><th class="num">Cost</th><th class="no-print"></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <button class="no-print" id="addService">Add service line</button>
+      </div>
+    </section>
+
+    <div class="grid" style="margin-top:22px;">
+      <section class="panel">
+        <h2>Scenario controls</h2>
+        <div class="panel-body">
+          <div class="section-title">Quick adjust</div>
+          <label>Scale monthly hours</label>
+          <div class="range-row"><input id="scale" type="range" min="50" max="150" value="100" /><strong id="scaleLabel">100%</strong></div>
+          <p class="footer-note">Use this to model lighter or heavier service levels without changing the base worksheet assumptions.</p>
+          <div class="section-title">Package guide</div>
+          <div id="packageGuide" class="recommendation"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Client-ready summary</h2>
+        <div class="panel-body">
+          <div id="proposalSummary"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const eur = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+    const eur2 = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const defaults = {
+      platforms: [
+        ['Facebook', 'Agency/Partners', 12, '9 videos + 3 static / carousels', '3 times per week'],
+        ['Instagram', 'Agency/Partners', 12, '9 videos + 3 static / carousels', '4 times per week'],
+        ['TikTok', 'Agency', 12, '9 videos + 3 static / carousels', '5 times per week'],
+        ['LinkedIn', 'Agency', 2, '2 videos', 'Bi-weekly']
+      ],
+      services: [
+        ['SM Content Calendar Development', 'Agency', '6 hrs per month', 6],
+        ['Response Handling', 'Agency', '30 mins per day', 15],
+        ['Bi-monthly Content Video Shoots', 'Agency', 'Video content shot on location bi-monthly', 4],
+        ['Video / Animation Post Production', 'Required', '10 videos, originally 15 hrs per month in source note', 4],
+        ['Static Image / Carousel', 'Required', '15 statics, 30 mins per visual in source note', 1.5],
+        ['Content Scheduling', 'Agency', '4 hrs per month', 4],
+        ['Advertising Management', 'TBC', 'To be confirmed', 0],
+        ['Analysis & Measurement', 'Agency', '3 hrs per month', 3],
+        ['Bi-weekly Online Client Meetings', 'Agency', '2 hrs per month online', 2],
+        ['General Account Management', 'Agency', '4 hrs in source note, 6 hrs in source hours column', 6]
+      ]
+    };
+
+    let platforms = JSON.parse(JSON.stringify(defaults.platforms));
+    let services = JSON.parse(JSON.stringify(defaults.services));
+
+    const el = id => document.getElementById(id);
+    const num = id => Number(el(id).value || 0);
+
+    function input(value, type = 'text', attrs = '') { return `<input type="${type}" value="${String(value).replaceAll('"', '&quot;')}" ${attrs}>`; }
+
+    function renderPlatforms() {
+      const tbody = document.querySelector('#platformTable tbody');
+      tbody.innerHTML = platforms.map((p, i) => `<tr>
+        <td>${input(p[0])}</td>
+        <td>${input(p[1])}</td>
+        <td>${input(p[2], 'number', 'min="0" step="1" class="num"')}</td>
+        <td>${input(p[3])}</td>
+        <td>${input(p[4])}</td>
+        <td class="no-print"><button data-del-platform="${i}">Remove</button></td>
+      </tr>`).join('');
+      tbody.querySelectorAll('input').forEach((node) => node.addEventListener('input', syncPlatformData));
+      tbody.querySelectorAll('[data-del-platform]').forEach(btn => btn.addEventListener('click', () => { platforms.splice(Number(btn.dataset.delPlatform), 1); renderPlatforms(); calculate(); }));
+    }
+
+    function renderServices() {
+      const tbody = document.querySelector('#hoursTable tbody');
+      const rate = num('rate');
+      const scale = num('scale') / 100;
+      tbody.innerHTML = services.map((s, i) => {
+        const scaledHours = Number(s[3] || 0) * scale;
+        return `<tr>
+          <td>${input(s[0])}</td>
+          <td>${input(s[1])}</td>
+          <td>${input(s[2])}</td>
+          <td>${input(s[3], 'number', 'min="0" step="0.25" class="num"')}</td>
+          <td class="num">${eur2.format(scaledHours * rate)}</td>
+          <td class="no-print"><button data-del-service="${i}">Remove</button></td>
+        </tr>`;
+      }).join('');
+      tbody.querySelectorAll('input').forEach((node) => node.addEventListener('input', syncServiceData));
+      tbody.querySelectorAll('[data-del-service]').forEach(btn => btn.addEventListener('click', () => { services.splice(Number(btn.dataset.delService), 1); renderServices(); calculate(); }));
+    }
+
+    function syncPlatformData() {
+      platforms = Array.from(document.querySelectorAll('#platformTable tbody tr')).map(row => {
+        const cells = row.querySelectorAll('input');
+        return [cells[0].value, cells[1].value, Number(cells[2].value || 0), cells[3].value, cells[4].value];
+      });
+      calculate();
+    }
+
+    function syncServiceData() {
+      services = Array.from(document.querySelectorAll('#hoursTable tbody tr')).map(row => {
+        const cells = row.querySelectorAll('input');
+        return [cells[0].value, cells[1].value, cells[2].value, Number(cells[3].value || 0)];
+      });
+      calculate();
+    }
+
+    function uniquePostsEstimate() {
+      const posts = platforms.map(p => Number(p[2] || 0));
+      if (!posts.length) return 0;
+      return Math.max(...posts);
+    }
+
+    function calculate() {
+      const rate = num('rate');
+      const scale = num('scale') / 100;
+      const baseHours = services.reduce((sum, s) => sum + Number(s[3] || 0), 0);
+      const hours = baseHours * scale;
+      const monthlyFee = hours * rate;
+      const addOns = num('adBudget') + num('prizing') + num('website') + num('external');
+      const subtotal = monthlyFee + addOns;
+      const vatAmount = subtotal * (num('vat') / 100);
+      const totalIncVat = subtotal + vatAmount;
+      const uniquePosts = uniquePostsEstimate();
+      const platformPosts = platforms.reduce((sum, p) => sum + Number(p[2] || 0), 0);
+
+      el('scaleLabel').textContent = `${Math.round(scale * 100)}%`;
+      el('monthlyFee').textContent = eur.format(monthlyFee);
+      el('grandTotal').textContent = eur.format(subtotal);
+      el('totalHours').textContent = hours.toFixed(hours % 1 ? 1 : 0);
+      el('postCost').textContent = uniquePosts ? eur.format(monthlyFee / uniquePosts) : '€0';
+
+      const riskClass = hours < 25 ? 'warning' : hours > 70 ? 'danger' : '';
+      const guide = hours < 30
+        ? 'Lean package. Suitable for light management, scheduling and reporting, but content production or daily community response will be constrained.'
+        : hours < 50
+          ? 'Core package. Suitable for always-on social management with monthly planning, content production, response handling and reporting.'
+          : 'Growth package. Suitable for heavier content production, active community management, paid social support and more frequent client contact.';
+      el('packageGuide').className = `recommendation ${riskClass}`;
+      el('packageGuide').textContent = guide;
+
+      el('proposalSummary').innerHTML = `
+        <p><span class="pill">${el('clientName').value || 'Client'} monthly scope</span></p>
+        <p><strong>${eur2.format(monthlyFee)}</strong> monthly management fee based on <strong>${hours.toFixed(1)}</strong> hours at <strong>${eur2.format(rate)}</strong> per hour.</p>
+        <p><strong>${platforms.length}</strong> platforms, <strong>${platformPosts}</strong> total platform posts per month, approx. <strong>${uniquePosts}</strong> unique content pieces before platform adaptation.</p>
+        <p>Pass-through / optional budget: <strong>${eur2.format(addOns)}</strong>. Subtotal excluding VAT: <strong>${eur2.format(subtotal)}</strong>. VAT at ${num('vat')}%: <strong>${eur2.format(vatAmount)}</strong>. Total including VAT: <strong>${eur2.format(totalIncVat)}</strong>.</p>
+        <p class="muted">${el('notes').value}</p>
+      `;
+      renderServicesCostsOnly();
+    }
+
+    function renderServicesCostsOnly() {
+      document.querySelectorAll('#hoursTable tbody tr').forEach((row, i) => {
+        const costCell = row.children[4];
+        if (costCell) costCell.textContent = eur2.format(Number(services[i]?.[3] || 0) * (num('scale') / 100) * num('rate'));
+      });
+    }
+
+    function reset() {
+      platforms = JSON.parse(JSON.stringify(defaults.platforms));
+      services = JSON.parse(JSON.stringify(defaults.services));
+      el('clientName').value = 'Golden Irish Eggs'; el('rate').value = 70; el('vat').value = 23;
+      el('adBudget').value = 0; el('prizing').value = 0; el('website').value = 0; el('external').value = 0; el('scale').value = 100;
+      el('notes').value = 'Additional costs and external service costs are presented in advance for approval before being incurred.';
+      renderPlatforms(); renderServices(); calculate();
+    }
+
+    function exportCsv() {
+      syncPlatformData(); syncServiceData();
+      const rows = [];
+      rows.push(['Tilt Social Media Budget Planner']);
+      rows.push(['Client', el('clientName').value]);
+      rows.push(['Blended rate', num('rate')]);
+      rows.push([]);
+      rows.push(['Platforms', 'Team', 'Posts per month', 'Content mix', 'Frequency']);
+      platforms.forEach(p => rows.push(p));
+      rows.push([]);
+      rows.push(['Service line', 'Owner/status', 'Basis', 'Base hours']);
+      services.forEach(s => rows.push(s));
+      const csv = rows.map(r => r.map(v => `"${String(v ?? '').replaceAll('"', '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${(el('clientName').value || 'client').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-social-budget.csv`;
+      a.click(); URL.revokeObjectURL(a.href);
+    }
+
+    document.querySelectorAll('#clientName,#rate,#vat,#adBudget,#prizing,#website,#external,#notes,#scale').forEach(node => node.addEventListener('input', () => { renderServices(); calculate(); }));
+    el('addPlatform').addEventListener('click', () => { platforms.push(['New platform', 'Agency', 4, 'Static / video mix', 'Weekly']); renderPlatforms(); calculate(); });
+    el('addService').addEventListener('click', () => { services.push(['New service line', 'Agency', 'Basis TBC', 1]); renderServices(); calculate(); });
+    el('resetBtn').addEventListener('click', reset);
+    el('csvBtn').addEventListener('click', exportCsv);
+
+    reset();
+  </script>
+</body>
+</html>

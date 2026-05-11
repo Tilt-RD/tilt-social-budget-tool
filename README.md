@@ -1,24 +1,23 @@
 # Tilt Social Media Budget Planner
 
-Interactive browser tool built from the Golden Irish Eggs social budget matrix.
+Interactive browser tool for building social media management budgets for Tilt clients.
 
 ## Use
 
 Open `index.html` in a browser.
 
-- Edit client name, blended rate, VAT and pass-through budgets
-- Add/remove platforms and service lines
-- Adjust workload with the scenario slider
+- Start from zero and drag the sliders to build a scope
+- Edit client name, blended rate and pass-through budgets
+- Platform post volume drives planning, scheduling, advertising and reporting hours
+- Videos/reels automatically reduce the number of static/carousel assets required
 - Export CSV or print/save as PDF for proposals
 
-## Source assumptions
+## Current pricing assumptions
 
-Default values are taken from `Golden_Irish_Eggs_Social_Budget_Matrix.xlsx`:
+- Blended rate: €100/hour
+- Standard meetings/account management: 7 hours/month once a scope is active
+  - 2 hours client meetings
+  - 5 hours account management
+- Example baseline: 12 posts/month on Facebook, Instagram and TikTok, 4 posts/month on LinkedIn, 4 videos/reels and 8 static/carousel assets = approx. €3,500 ex VAT
 
-- Blended rate: €70/hour
-- Default service hours: 45.5/month
-- Monthly management fee: €3,185
-- Platforms: Facebook, Instagram, TikTok, LinkedIn
-- Core content assumption: 9 videos and 3 static/carousel posts, adapted per platform
-
-Additional costs are separated from management fee: social ad budget, prizing, website/CMS updates and external production.
+Additional costs are separated from management fee: social ad budget, prizing and external production.

@@ -20,4 +20,4 @@ Open `index.html` in a browser.
   - 5 hours account management
 - Example baseline: 12 posts/month on Facebook, Instagram and TikTok, 4 posts/month on LinkedIn, 4 videos/reels and 8 static/carousel assets = approx. €3,500 ex VAT
 
-Additional costs are separated from management fee: social ad budget, prizing and external production.
+Additional costs are separated from management fee: social ad budget and prizing.

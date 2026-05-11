@@ -187,11 +187,6 @@
             <div><input id="prizing" type="range" min="0" max="2000" step="25" value="0"><div class="ticks"><span>€0</span><span>€1k</span><span>€2k</span></div></div>
             <div class="value-box" id="prizingVal">€0</div>
           </div>
-          <div class="slider-row">
-            <div class="slider-name">External production</div>
-            <div><input id="external" type="range" min="0" max="5000" step="50" value="0"><div class="ticks"><span>€0</span><span>€2.5k</span><span>€5k</span></div></div>
-            <div class="value-box" id="externalVal">€0</div>
-          </div>
         </div>
 
         <div class="section">
@@ -244,7 +239,6 @@
       el('videos').value = values.videos ?? 0;
       el('adSpend').value = values.adSpend ?? 0;
       el('prizing').value = values.prizing ?? 0;
-      el('external').value = values.external ?? 0;
       for (const p of platforms) communityState[p] = values.communityPlatforms?.[p] ?? true;
       renderPlatformSliders(); renderCommunityToggles();
       document.querySelectorAll('[data-community]').forEach(t => t.classList.toggle('active', communityState[t.dataset.community]));
@@ -274,7 +268,7 @@
       const adminHours = schedulingHours + adsMgmtHours + reportingHours + meetingsHours + accountHours;
       const totalHours = calendarHours + communityHours + creativeHours + adminHours;
       const managementFee = totalHours * rate;
-      const extras = n('adSpend') + n('prizing') + n('external');
+      const extras = n('adSpend') + n('prizing');
       const grand = managementFee + extras;
 
       for (const p of platforms) el(`${p}Val`).textContent = platformState[p];
@@ -283,7 +277,6 @@
       el('staticsVal').textContent = statics;
       el('adSpendVal').textContent = eur.format(n('adSpend'));
       el('prizingVal').textContent = eur.format(n('prizing'));
-      el('externalVal').textContent = eur.format(n('external'));
       el('managementFee').textContent = eur.format(managementFee);
       el('totalHours').textContent = one(totalHours);
       el('uniqueContent').textContent = uniqueContent;
@@ -328,7 +321,7 @@
       client: 'Example Client', rate: 100,
       platforms: { Facebook: 12, Instagram: 12, TikTok: 12, LinkedIn: 4 },
       communityMins: 0, videos: 4,
-      adSpend: 0, prizing: 0, external: 0
+      adSpend: 0, prizing: 0
     }));
     el('csvBtn').addEventListener('click', exportCsv);
 

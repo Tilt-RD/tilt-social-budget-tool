@@ -98,7 +98,6 @@
       </div>
       <div class="actions no-print">
         <button id="zeroBtn">Set all to zero</button>
-        <button id="exampleBtn">Load €3.5k example</button>
         <button id="csvBtn">Export CSV</button>
         <button class="primary" onclick="window.print()">Print / PDF</button>
       </div>
@@ -326,12 +325,6 @@
 
     document.querySelectorAll('input').forEach(input => input.addEventListener('input', calculate));
     el('zeroBtn').addEventListener('click', () => setValues({ rate: 100 }));
-    el('exampleBtn').addEventListener('click', () => setValues({
-      client: 'Example Client', rate: 100,
-      platforms: { Facebook: 12, Instagram: 12, TikTok: 12, LinkedIn: 4 },
-      communityMins: 0, videos: 4,
-      adSpend: 0, prizing: 0, ugcVideos: 0
-    }));
     el('csvBtn').addEventListener('click', exportCsv);
 
     renderPlatformSliders(); renderCommunityToggles(); calculate();
